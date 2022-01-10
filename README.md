@@ -4,7 +4,7 @@
 [![Build Status](https://github.com/magenta/magenta/workflows/build/badge.svg)](https://github.com/magenta/magenta/actions?query=workflow%3Abuild)
  [![PyPI version](https://badge.fury.io/py/magenta.svg)](https://badge.fury.io/py/magenta)
 
-**Magenta** is a research project exploring the role of machine learning
+**Magenta** it's trying version is a research project exploring the role of machine learning
 in the process of creating art and music.  Primarily this
 involves developing new deep learning and reinforcement learning
 algorithms for generating songs, images, drawings, and other materials. But it's also
