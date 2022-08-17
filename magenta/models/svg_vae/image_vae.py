@@ -1,4 +1,4 @@
-# Copyright 2021 The Magenta Authors.
+# Copyright 2022 The Magenta Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ from tensor2tensor.layers import common_layers
 from tensor2tensor.utils import registry
 from tensor2tensor.utils import t2t_model
 import tensorflow.compat.v1 as tf
+from tensorflow.compat.v1 import estimator as tf_estimator
 import tensorflow_probability as tfp
 
 tfd = tfp.distributions
@@ -51,12 +52,13 @@ class ImageVAE(t2t_model.T2TModel):
     return transformed_features
 
   def body(self, features):
-    train = self._hparams.mode == tf.estimator.ModeKeys.TRAIN
+    train = self._hparams.mode == tf_estimator.ModeKeys.TRAIN
     return self.vae_internal(features, self._hparams, train)
 
   def top(self, body_output, features):
     # body_output should be a dict with 'outputs', which will be an image.
     # no postprocessing needed.
+    del features
     return body_output
 
   def loss(self, logits, features):
@@ -107,7 +109,7 @@ class ImageVAE(t2t_model.T2TModel):
       losses['training'] = -elbo
 
       if (not hasattr(self, 'summarized_imgs')
-          and self._hparams.mode != tf.estimator.ModeKeys.PREDICT):
+          and self._hparams.mode != tf_estimator.ModeKeys.PREDICT):
         self.summarized_imgs = True
         with tf.name_scope(None), tf.name_scope('train' if train else 'test'):
           tf.summary.image('rendered_out', dec_out.mean())
@@ -120,7 +122,7 @@ class ImageVAE(t2t_model.T2TModel):
     x_shape = common_layers.shape_list(x)
     with tf.variable_scope('bottleneck', reuse=tf.AUTO_REUSE):
       mu = x[..., :self.hparams.bottleneck_bits]
-      if self.hparams.mode != tf.estimator.ModeKeys.TRAIN:
+      if self.hparams.mode != tf_estimator.ModeKeys.TRAIN:
         return mu, 0.0  # No sampling or kl loss on eval.
       log_sigma = x[..., self.hparams.bottleneck_bits:]
       epsilon = tf.random_normal(x_shape[:-1] + [z_size])
